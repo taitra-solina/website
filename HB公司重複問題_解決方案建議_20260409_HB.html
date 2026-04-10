@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HB 公司重複問題 — 解決方案建議</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root {
+      --white: #FFFFFF;
+      --bg: #F5F6FA;
+      --bg-card: #FFFFFF;
+      --orange: #E85D04;
+      --orange-dark: #C44D03;
+      --orange-light: #FFF1E8;
+      --orange-soft: #FFD6BA;
+      --deep-blue: #1B2A4A;
+      --navy: #253B6E;
+      --muted-blue: #4A6FA5;
+      --light-blue: #E8EEF6;
+      --pale-blue: #D6E4F0;
+      --golden: #E6940A;
+      --text-primary: #1A1A2E;
+      --text-body: #2D3748;
+      --text-secondary: #4A5568;
+      --text-muted: #718096;
+      --border: #E2E8F0;
+      --border-light: #EDF2F7;
+      --green: #059669;
+      --green-light: #ECFDF5;
+      --red: #DC2626;
+      --red-light: #FEF2F2;
+      --yellow: #D69E2E;
+      --yellow-light: #FEFCE8;
+      --sidebar-w: 220px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-pill: 100px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 14px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.10);
+      --font: 'Noto Sans TC', 'Inter', -apple-system, sans-serif;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; font-size:24px; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-body);
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+      font-size: 1rem;
+    }
+
+    /* Progress */
+    #scroll-progress {
+      position:fixed; top:0; left:0; height:3px;
+      background: linear-gradient(90deg, var(--orange), var(--golden));
+      z-index:9999; transition:width 0.15s;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position:fixed; top:0; left:0; bottom:0;
+      width: var(--sidebar-w); background: var(--deep-blue);
+      z-index:1000; display:flex; flex-direction:column;
+      padding: 32px 0;
+      overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 0 24px; margin-bottom: 36px;
+      font-size: 0.85rem; font-weight: 800;
+      color: var(--orange); letter-spacing: 0.04em;
+    }
+    .sidebar-logo span { color: rgba(255,255,255,0.5); font-weight: 400; }
+    .nav-list { display:flex; flex-direction:column; gap:2px; padding: 0 12px; }
+    .nav-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; font-size: 0.88rem; font-weight: 500;
+      color: rgba(255,255,255,0.55); border-radius: var(--radius-sm);
+      cursor:pointer; border:none; background:none; font-family:var(--font);
+      transition: all 0.2s; text-align:left; width:100%;
+    }
+    .nav-link:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.06); }
+    .nav-link.active {
+      color: #fff; background: rgba(255,255,255,0.1);
+      font-weight: 700; border-left: 3px solid var(--orange);
+    }
+    .nav-num {
+      font-size: 0.72rem; font-weight: 700; opacity: 0.5;
+      min-width: 18px;
+    }
+
+    /* Main Content */
+    .main { margin-left: var(--sidebar-w); }
+    .page-wrap { max-width: 1050px; margin: 0 auto; padding: 0 40px; }
+    section { padding: 90px 0; }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh; display:flex; align-items:center;
+      background: linear-gradient(135deg, var(--deep-blue) 0%, var(--navy) 100%);
+      position:relative; overflow:hidden;
+    }
+    .hero::before {
+      content:''; position:absolute; top:-150px; right:-150px;
+      width:500px; height:500px;
+      background: radial-gradient(circle, rgba(232,93,4,0.15) 0%, transparent 70%);
+      border-radius:50%;
+    }
+    .hero-content { position:relative; z-index:1; }
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 18px; background:rgba(232,93,4,0.15);
+      color:var(--orange); font-size:0.88rem; font-weight:700;
+      border-radius:var(--radius-pill); margin-bottom:28px;
+      border:1px solid rgba(232,93,4,0.25);
+    }
+    .hero-badge::before { content:''; width:8px; height:8px; background:var(--orange); border-radius:50%; }
+    .hero h1 {
+      font-size: 3rem; font-weight:900; line-height:1.25;
+      color:#fff; margin-bottom:20px; letter-spacing:-0.02em;
+    }
+    .hero h1 .accent { color: var(--orange); }
+    .hero-sub {
+      font-size:1.12rem; color:rgba(255,255,255,0.65); max-width:580px;
+      line-height:1.9; margin-bottom:32px;
+    }
+    .hero-meta {
+      display:flex; gap:24px; font-size:0.9rem; color:rgba(255,255,255,0.4);
+    }
+
+    /* Section Header */
+    .section-head { margin-bottom:44px; }
+    .section-num {
+      font-size:0.78rem; font-weight:700; color:var(--orange);
+      letter-spacing:0.1em; text-transform:uppercase; margin-bottom:8px;
+    }
+    .section-title {
+      font-size:1.9rem; font-weight:800; color:var(--text-primary);
+      letter-spacing:-0.02em; line-height:1.3;
+    }
+    .section-subtitle { font-size:1rem; color:var(--text-secondary); margin-top:6px; }
+
+    /* Cards */
+    .card {
+      background:var(--bg-card); border-radius:var(--radius-lg);
+      padding:32px; box-shadow:var(--shadow-sm); border:1px solid var(--border);
+      transition:box-shadow 0.3s, transform 0.3s;
+    }
+    .card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+
+    /* Stat Cards */
+    .stats-grid { display:grid; gap:20px; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); }
+    .stat-card {
+      background:var(--bg-card); border-radius:var(--radius-lg);
+      padding:26px; position:relative; overflow:hidden;
+      border:1px solid var(--border); transition:box-shadow 0.3s, transform 0.3s;
+    }
+    .stat-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+    .stat-card::before { content:''; position:absolute; top:0; left:0; width:4px; height:100%; }
+    .stat-card--orange::before { background:var(--orange); }
+    .stat-card--blue::before { background:var(--navy); }
+    .stat-card--green::before { background:var(--green); }
+    .stat-card--golden::before { background:var(--golden); }
+    .stat-card--red::before { background:var(--red); }
+    .stat-label { font-size:0.88rem; font-weight:600; color:var(--text-secondary); margin-bottom:8px; }
+    .stat-num { font-size:2.2rem; font-weight:900; letter-spacing:-0.03em; color:var(--text-primary); line-height:1.1; }
+    .stat-note { font-size:0.82rem; color:var(--text-muted); margin-top:8px; }
+
+    /* Table */
+    .data-table { width:100%; border-collapse:separate; border-spacing:0; font-size:0.92rem; }
+    .data-table th {
+      text-align:left; padding:14px 16px; font-weight:700;
+      color:var(--text-secondary); font-size:0.82rem;
+      text-transform:uppercase; letter-spacing:0.05em;
+      border-bottom:2px solid var(--border); background:var(--bg);
+    }
+    .data-table td { padding:14px 16px; border-bottom:1px solid var(--border-light); color:var(--text-body); }
+    .data-table tbody tr:hover { background:var(--bg); }
+
+    /* Badge */
+    .badge {
+      display:inline-block; padding:3px 10px; font-size:0.78rem;
+      font-weight:700; border-radius:var(--radius-pill);
+    }
+    .badge--good { background:var(--green-light); color:var(--green); }
+    .badge--warn { background:var(--yellow-light); color:var(--yellow); }
+    .badge--critical { background:var(--red-light); color:var(--red); }
+    .badge--primary { background:var(--orange-light); color:var(--orange); }
+    .badge--blue { background:var(--light-blue); color:var(--navy); }
+
+    /* Bar in table */
+    .pct-bar-wrap { display:flex; align-items:center; gap:10px; }
+    .pct-bar-track { flex:1; height:8px; background:var(--border-light); border-radius:4px; overflow:hidden; max-width:120px; }
+    .pct-bar-fill { height:100%; border-radius:4px; transition:width 1s ease; }
+    .pct-bar-fill--good { background:var(--green); }
+    .pct-bar-fill--warn { background:var(--yellow); }
+    .pct-bar-fill--critical { background:var(--red); }
+
+    /* Pie */
+    .pie-section { display:flex; align-items:center; gap:48px; flex-wrap:wrap; justify-content:center; }
+    .pie-legend { display:flex; flex-direction:column; gap:14px; }
+    .pie-legend-item { display:flex; align-items:center; gap:10px; font-size:0.95rem; color:var(--text-body); }
+    .pie-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+
+    /* Bar Chart */
+    .bar-chart { display:flex; flex-direction:column; gap:14px; }
+    .bar-row { display:grid; grid-template-columns:200px 1fr 80px; align-items:center; gap:14px; font-size:0.9rem; }
+    .bar-label { color:var(--text-body); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .bar-track { height:30px; background:var(--bg); border-radius:var(--radius-pill); overflow:hidden; }
+    .bar-fill { height:100%; border-radius:var(--radius-pill); transition:width 1.2s cubic-bezier(0.22,1,0.36,1); min-width:4px; }
+    .bar-fill--orange { background:linear-gradient(90deg, var(--orange), var(--golden)); }
+    .bar-fill--blue { background:linear-gradient(90deg, var(--navy), var(--muted-blue)); }
+    .bar-value { font-weight:800; color:var(--text-primary); text-align:right; font-variant-numeric:tabular-nums; }
+
+    /* Timeline */
+    .timeline { display:flex; flex-direction:column; gap:0; position:relative; padding-left:28px; }
+    .timeline::before {
+      content:''; position:absolute; left:7px; top:8px; bottom:8px;
+      width:2px; background:var(--border);
+    }
+    .tl-item { position:relative; padding:16px 0 16px 24px; }
+    .tl-item::before {
+      content:''; position:absolute; left:-24px; top:22px;
+      width:12px; height:12px; border-radius:50%;
+      background:var(--bg-card); border:3px solid var(--orange);
+    }
+    .tl-item:last-child::before { background:var(--orange); border-color:var(--orange); }
+    .tl-date { font-size:0.82rem; font-weight:700; color:var(--orange); margin-bottom:4px; }
+    .tl-text { font-size:0.95rem; color:var(--text-body); line-height:1.7; }
+
+    /* Steps */
+    .steps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .step-card {
+      background:var(--bg-card); border-radius:var(--radius-lg);
+      padding:28px; border:1px solid var(--border); transition:all 0.3s;
+    }
+    .step-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); border-color:var(--orange-soft); }
+    .step-num-circle {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:40px; height:40px; border-radius:50%;
+      background:var(--orange); color:white;
+      font-size:0.92rem; font-weight:800; margin-bottom:16px;
+    }
+    .step-card h4 { font-size:1.05rem; font-weight:700; color:var(--text-primary); margin-bottom:4px; }
+    .step-card .step-zh { font-size:0.88rem; color:var(--orange); font-weight:600; margin-bottom:10px; }
+    .step-card p { font-size:0.9rem; color:var(--text-secondary); line-height:1.7; }
+
+    /* Fields */
+    .field-item {
+      display:flex; align-items:center; gap:14px;
+      padding:14px 20px; background:var(--bg-card);
+      border-radius:var(--radius-md); border:1px solid var(--border);
+      font-size:0.95rem; transition:all 0.2s;
+    }
+    .field-item:hover { border-color:var(--orange-soft); background:var(--orange-light); }
+    .field-idx {
+      width:30px; height:30px; border-radius:50%;
+      background:var(--light-blue); color:var(--navy);
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.82rem; font-weight:700; flex-shrink:0;
+    }
+    .field-name { font-weight:600; color:var(--text-primary); font-family:'Inter',monospace; }
+
+    /* Report Links */
+    .report-link {
+      display:flex; align-items:center; gap:12px;
+      padding:14px 20px; background:var(--bg-card);
+      border-radius:var(--radius-md); border:1px solid var(--border);
+      font-size:0.92rem; font-weight:600; color:var(--navy);
+      text-decoration:none; transition:all 0.2s; cursor:pointer;
+    }
+    .report-link:hover { border-color:var(--orange); background:var(--orange-light); color:var(--orange); }
+    .report-link .link-icon {
+      width:28px; height:28px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.75rem; flex-shrink:0;
+    }
+
+    /* Solution */
+    .solution-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+    .solution-card {
+      background:var(--bg-card); border-radius:var(--radius-lg);
+      padding:32px; border:1px solid var(--border);
+      transition:all 0.3s; position:relative; overflow:hidden;
+    }
+    .solution-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-3px); }
+    .solution-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:4px; }
+    .solution-card--domestic::after { background:linear-gradient(90deg, var(--orange), var(--golden)); }
+    .solution-card--overseas::after { background:linear-gradient(90deg, var(--navy), var(--muted-blue)); }
+    .solution-tag {
+      display:inline-block; padding:5px 14px;
+      font-size:0.8rem; font-weight:700; border-radius:var(--radius-pill); margin-bottom:16px;
+    }
+    .solution-tag--domestic { background:var(--orange-light); color:var(--orange); }
+    .solution-tag--overseas { background:var(--light-blue); color:var(--navy); }
+    .solution-card h3 { font-size:1.25rem; font-weight:800; color:var(--text-primary); margin-bottom:12px; }
+    .solution-card .flow {
+      display:flex; align-items:center; gap:8px; margin:16px 0; font-size:0.95rem; font-weight:600;
+    }
+    .flow-step { padding:7px 18px; border-radius:var(--radius-pill); background:var(--bg); color:var(--text-body); }
+    .flow-arrow { color:var(--text-muted); font-size:1.1rem; }
+    .solution-card ul { list-style:none; padding:0; }
+    .solution-card li {
+      padding:10px 0; font-size:0.95rem; color:var(--text-body);
+      border-bottom:1px solid var(--border-light);
+      display:flex; align-items:flex-start; gap:12px;
+    }
+    .solution-card li:last-child { border:none; }
+    .li-icon {
+      width:24px; height:24px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.75rem; font-weight:700; margin-top:2px;
+    }
+    .li-icon--orange { background:var(--orange-light); color:var(--orange); }
+    .li-icon--blue { background:var(--light-blue); color:var(--navy); }
+
+    /* Callout */
+    .callout { padding:24px 28px; border-radius:var(--radius-md); border-left:4px solid; margin:24px 0; }
+    .callout--orange { background:var(--orange-light); border-color:var(--orange); }
+    .callout--blue { background:var(--light-blue); border-color:var(--navy); }
+    .callout-title { font-size:0.95rem; font-weight:700; margin-bottom:6px; }
+    .callout-body { font-size:0.95rem; line-height:1.8; }
+
+    /* Highlight Section */
+    .highlight-section { background: var(--deep-blue); padding:80px 0; }
+    .highlight-section .section-num { color:var(--golden); }
+    .highlight-section .section-title { color:#fff; }
+
+    /* Closing */
+    .closing { background:var(--white); text-align:center; padding:120px 0; }
+    .closing h2 { font-size:2.4rem; font-weight:900; color:var(--text-primary); letter-spacing:-0.02em; margin-bottom:20px; }
+    .closing .hl { color:var(--orange); }
+    .closing p { font-size:1.08rem; color:var(--text-secondary); max-width:520px; margin:0 auto; line-height:1.9; }
+
+    /* Footer */
+    .footer { padding:32px 0; text-align:center; font-size:0.82rem; color:var(--text-muted); border-top:1px solid var(--border); }
+
+    /* Back to top */
+    .back-to-top {
+      position:fixed; bottom:32px; right:32px;
+      width:46px; height:46px; border-radius:50%;
+      background:var(--orange); color:white; border:none;
+      cursor:pointer; font-size:1.2rem; box-shadow:var(--shadow-lg);
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; transform:translateY(20px); transition:all 0.3s; z-index:999;
+    }
+    .back-to-top.visible { opacity:1; transform:translateY(0); }
+    .back-to-top:hover { background:var(--navy); }
+
+    /* Reveal */
+    .reveal { opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    /* Two col */
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:start; }
+
+    /* Responsive */
+    @media (max-width:900px) {
+      .sidebar { display:none; }
+      .main { margin-left:0; }
+      .hero h1 { font-size:2rem; }
+      .stats-grid { grid-template-columns:1fr; }
+      .steps-grid { grid-template-columns:1fr; }
+      .solution-grid { grid-template-columns:1fr; }
+      .two-col { grid-template-columns:1fr; }
+      .bar-row { grid-template-columns:140px 1fr 70px; }
+      section { padding:60px 0; }
+      .page-wrap { padding:0 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="scroll-progress" style="width:0%"></div>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const DATA = {
+      nav: ['首頁','緣由','現況','重複分析','分佈概況','DQ 六大步驟','資料剖析','解決方案','總結'],
+      hero: {
+        badge:'數據治理專案',
+        title:['HB 公司重複問題','解決方案建議'],
+        sub:'針對 HubSpot 公司資料中大量重複記錄，透過 TAITRA 數據治理 DQ 六大步驟進行系統性分析，提出國內外差異化的解決策略。',
+        author:'數位科技中心｜數據分析組｜怯婷芳',
+        date:'2026.04.08'
+      },
+      background: [
+        { date:'2026.01.21', text:'EBS維護作業為Hubspot增強內容建議' },
+        { date:'2026.01.28', text:'DATA TEAM與EBS瞭解EBS API存取', children:[
+          '先處理HB公司重複問題',
+          'Joyce:優化HB公司資料(統編、公司中英文名稱、公司網址):API自動化'
+        ]}
+      ],
+      overview: {
+        total:302503,
+        sources:[
+          {name:'IMPORT',count:299748,pct:99.1},
+          {name:'FORM',count:1276,pct:0.4},
+          {name:'CRM_UI',count:1198,pct:0.4},
+          {name:'COMPANIES',count:278,pct:0.1},
+          {name:'MOBILE_IOS',count:2,pct:0.0},
+          {name:'AUTOMATION',count:1,pct:0.0}
+        ]
+      },
+      dup: { total:238175, nonDup:61573, dupPct:78.8, domestic:30903, overseas:204935 },
+      domesticTop:[
+        {name:'數位商務處_專案規劃組',count:5812},
+        {name:'數位科技中心_數據分析組',count:3787},
+        {name:'國際企業人才培訓中心_高雄教務組',count:2553},
+        {name:'市場拓展處_亞太組',count:2125},
+        {name:'產業拓展處_電動車組',count:1562},
+        {name:'服務業推廣中心_推廣三組',count:1524},
+        {name:'數位商務處_會員經營組',count:1408},
+        {name:'行銷專案處_運金形象組',count:1387},
+        {name:'市場拓展處_亞西非洲組',count:1226},
+        {name:'市場拓展處_美洲組',count:1027}
+      ],
+      overseasTop:[
+        {name:'TTC, Chicago',count:151573},
+        {name:'TTC, Los Angeles',count:16723},
+        {name:'TTC, San Francisco',count:9087},
+        {name:'TTC, Osaka',count:6953},
+        {name:'TTC, Sydney',count:3377},
+        {name:'TTC, Dalian',count:2363},
+        {name:'TTC, Hong Kong',count:2204},
+        {name:'TTC, Beijing',count:1723},
+        {name:'TTC, Toronto',count:1116},
+        {name:'TTC, Jakarta',count:1083}
+      ],
+      dqSteps:[
+        {num:1,title:'Select & Define',zh:'挑選問題',desc:'描述問題，定義相關資料品質維度（準確性、唯一性、完整性、一致性、時效性、有效性），鑑別處理等級與優先級。'},
+        {num:2,title:'Profile',zh:'資料剖析',desc:'按關鍵 KEY 值列出：數據總體完整性缺失、關鍵鍵值缺失率、定義邏輯衝突比。'},
+        {num:3,title:'Analyze',zh:'分析報告',desc:'按理想情況與現況分析，提出差異現象的技術舉證，將問題歸類為治理流程、系統缺陷、人為疏失、流程設計。'},
+        {num:4,title:'Trace Root Causes',zh:'追溯根因',desc:'定義 PPIT（People、Process、Information、Technology）與最終 Root Cause，提出臨時數據修復建議。'},
+        {num:5,title:'Fix Root Causes',zh:'修復根因',desc:'根據 PPIT 診斷提出具體改善計畫，規劃治理決策與解決方案的改善階段與步驟。'},
+        {num:6,title:'Monitor & Trend',zh:'監控趨勢',desc:'定義監控 DQ 指標（含公式），列出指標、目標值、警報條件、警報等級、監控週期。'}
+      ],
+      keyFields:['CompanyName','domain_name','tt_vat_number','tt_taiwan_vat_number','tt_global_vat_number','hs_object_id','website'],
+      profiling: {
+        summary: { total:30049, unique:9313, dupRecords:30041, dupGroups:9307 },
+        completeness: { totalCells:210343, missingCells:113665, missingRate:54.04 },
+        fields:[
+          {name:'CompanyName',hasVal:30047,missing:2,rate:0.01,level:'good'},
+          {name:'domain',hasVal:1150,missing:28899,rate:96.17,level:'critical'},
+          {name:'tt_vat_number',hasVal:23312,missing:6737,rate:22.42,level:'warn'},
+          {name:'tt_taiwan_vat_number',hasVal:6954,missing:23095,rate:76.86,level:'critical'},
+          {name:'tt_global_vat_number',hasVal:4020,missing:26029,rate:86.62,level:'critical'},
+          {name:'hs_object_id',hasVal:30049,missing:0,rate:0.00,level:'good'},
+          {name:'website',hasVal:1146,missing:28903,rate:96.19,level:'critical'}
+        ]
+      },
+      reports:[
+        {scope:'國內',items:[
+          {name:'數位商務處_專案規劃組',file:'DQ11_STEP2_資料品質剖析_國內_數位商務處_專案規劃組.html'},
+          {name:'數位科技中心_數據分析組',file:'DQ11_STEP2_資料品質剖析_國內_數位科技中心_數據分析組.html'},
+          {name:'國際企業人才培訓中心（高雄教務組）',file:'國內 — 國際企業人才培訓中心（高雄教務組）20260408.html'}
+        ]},
+        {scope:'國外',items:[
+          {name:'TTC, Chicago',file:'DQ11_STEP2_資料品質剖析_國外_TTC_Chicago.html'},
+          {name:'TTC, Los Angeles',file:'DQ11_STEP2_資料品質剖析_國外_TTC_LosAngeles.html'},
+          {name:'TTC, San Francisco',file:'DQ_資料品質剖析_國外_TTC_SanFrancisco_V3.html'}
+        ]}
+      ]
+    };
+
+    const fmt = n => n.toLocaleString('en-US');
+    const levelLabel = l => l === 'good' ? '良好' : l === 'warn' ? '警告' : '嚴重';
+
+    function useReveal(th=0.15) {
+      const ref = useRef(null);
+      const [vis,setVis] = useState(false);
+      useEffect(() => {
+        const el = ref.current; if(!el) return;
+        const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting){setVis(true);obs.disconnect();} }, {threshold:th});
+        obs.observe(el);
+        return () => obs.disconnect();
+      }, []);
+      return [ref,vis];
+    }
+    function Reveal({children,delay=0,className=''}) {
+      const [ref,vis] = useReveal();
+      return <div ref={ref} className={`reveal ${vis?'visible':''} ${className}`} style={{transitionDelay:`${delay}ms`}}>{children}</div>;
+    }
+    function Counter({end,duration=1800,suffix=''}) {
+      const [val,setVal] = useState(0);
+      const [ref,vis] = useReveal();
+      useEffect(() => {
+        if(!vis) return;
+        const st = performance.now();
+        const tick = now => {
+          const p = Math.min((now-st)/duration,1);
+          setVal(Math.round((1-Math.pow(1-p,3))*end));
+          if(p<1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }, [vis,end]);
+      return <span ref={ref}>{fmt(val)}{suffix}</span>;
+    }
+    function AnimBar({width,color='orange'}) {
+      const [ref,vis] = useReveal(0.1);
+      return <div className="bar-track" ref={ref}><div className={`bar-fill bar-fill--${color}`} style={{width:vis?`${width}%`:'0%'}}/></div>;
+    }
+
+    /* Sidebar Nav */
+    function Sidebar() {
+      const [active,setActive] = useState(0);
+      useEffect(() => {
+        const onScroll = () => {
+          const h = document.documentElement.scrollHeight - window.innerHeight;
+          document.getElementById('scroll-progress').style.width = (h>0?(window.scrollY/h)*100:0)+'%';
+          const secs = document.querySelectorAll('section[id]');
+          let cur = 0;
+          secs.forEach((s,i) => { if(window.scrollY >= s.offsetTop - 200) cur = i; });
+          setActive(cur);
+        };
+        window.addEventListener('scroll',onScroll,{passive:true});
+        return () => window.removeEventListener('scroll',onScroll);
+      },[]);
+      return (
+        <nav className="sidebar">
+          <div className="sidebar-logo">TAITRA <span>DQ</span></div>
+          <div className="nav-list">
+            {DATA.nav.map((label,i) => (
+              <button key={i} className={`nav-link ${active===i?'active':''}`}
+                onClick={() => { const el=document.querySelectorAll('section[id]')[i]; if(el) el.scrollIntoView({behavior:'smooth'}); }}>
+                <span className="nav-num">{String(i).padStart(2,'0')}</span>
+                {label}
+              </button>
+            ))}
+          </div>
+        </nav>
+      );
+    }
+
+    function BackToTop() {
+      const [vis,setVis] = useState(false);
+      useEffect(() => {
+        const h = () => setVis(window.scrollY>600);
+        window.addEventListener('scroll',h,{passive:true});
+        return () => window.removeEventListener('scroll',h);
+      },[]);
+      return <button className={`back-to-top ${vis?'visible':''}`} onClick={()=>window.scrollTo({top:0,behavior:'smooth'})}>↑</button>;
+    }
+
+    function HeroSection() {
+      const d = DATA.hero;
+      return (
+        <section id="sec-0" className="hero">
+          <div className="page-wrap hero-content">
+            <Reveal><div className="hero-badge">{d.badge}</div></Reveal>
+            <Reveal delay={100}><h1>{d.title[0]}<br/><span className="accent">{d.title[1]}</span></h1></Reveal>
+            <Reveal delay={200}><p className="hero-sub">{d.sub}</p></Reveal>
+            <Reveal delay={300}><div className="hero-meta"><span>👤 {d.author}</span><span>📅 {d.date}</span></div></Reveal>
+          </div>
+        </section>
+      );
+    }
+
+    function BackgroundSection() {
+      return (
+        <section id="sec-1" style={{background:'var(--white)'}}>
+          <div className="page-wrap">
+            <Reveal><div className="section-head">
+              <div className="section-num">01 — BACKGROUND</div>
+              <div className="section-title">緣由</div>
+            </div></Reveal>
+            <Reveal delay={100}>
+              <div className="timeline">
+                {DATA.background.map((e,i) => (
+                  <div className="tl-item" key={i}>
+                    <div className="tl-date">{e.date}</div>
+                    <div className="tl-text">{e.text}</div>
+                    {e.children && (
+                      <ul style={{margin:'10px 0 0 20px',listStyle:'disc',display:'flex',flexDirection:'column',gap:'6px'}}>
+                        {e.children.map((c,ci) => (
+                          <li key={ci} style={{fontSize:'0.9rem',color:'var(--text-secondary)',lineHeight:'1.7'}}>{c}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      );
+    }
+
+    function OverviewSection() {
+      const d = DATA.overview;
+      return (
+        <section id="sec-2" style={{background:'var(--bg)'}}>
+          <div className="page-wrap">
+            <Reveal><div className="section-head">
+              <div className="section-num">02 — CURRENT STATE</div>
+              <div className="section-title">現況概覽</div>
+            </div></Reveal>
+            <Reveal delay={100}>
+              <div className="stats-grid" style={{marginBottom:'36px'}}>
+                <div className="stat-card stat-card--orange">
+                  <div className="stat-label">HB 公司總數</div>
+                  <div className="stat-num"><Counter end={d.total}/></div>
+                  <div className="stat-note">截至 2026.04.08</div>
+                </div>
+                <div className="stat-card stat-card--blue">
+                  <div className="stat-label">匯入來源佔比</div>
+                  <div className="stat-num">99.1<span style={{fontSize:'1.3rem'}}>%</span></div>
+                  <div className="stat-note">IMPORT 為最大宗</div>
+                </div>
+                <div className="stat-card stat-card--golden">
+                  <div className="stat-label">其他來源</div>
+                  <div className="stat-num"><Counter end={2755}/></div>
+                  <div className="stat-note">FORM + CRM_UI + 其他</div>
+                </div>
+              </div>
+            </Reveal>
+            <Reveal delay={200}>
+              <div className="card">
+                <h3 style={{fontSize:'1.05rem',fontWeight:700,color:'var(--text-primary)',marginBottom:'20px'}}>公司來源分佈</h3>
+                <table className="data-table">
+                  <thead><tr><th>來源</th><th>數量</th><th>佔比</th><th>類型</th></tr></thead>
+                  <tbody>
+                    {d.sources.map((s,i) => (
+                      <tr key={i}>
+                        <td style={{fontWeight:600}}>{s.name}</td>
+                        <td style={{fontVariantNumeric:'tabular-nums'}}>{fmt(s.count)}</td>
+                        <td>{s.pct}%</td>
+                        <td><span className={`badge ${i===0?'badge--primary':'badge--blue'}`}>{i===0?'主要':'次要'}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      );
+    }
+
+    function DuplicateSection() {
+      const d = DATA.dup;
+      const r=80, c=2*Math.PI*r;
+      const dupLen = (d.total/(d.total+d.nonDup))*c;
+      return (
+        <section id="sec-3" style={{background:'var(--white)'}}>
+          <div className="page-wrap">
+            <Reveal><div className="section-head">
+              <div className="section-num">03 — DUPLICATE ANALYSIS</div>
+              <div className="section-title">重複問題分析</div>
+              <div className="section-subtitle">匯入的公司中，有多少是重複的？</div>
+            </div></Reveal>
+            <div className="two-col">
+              <Reveal delay={100}>
+                <div className="stats-grid" style={{gridTemplateColumns:'1fr'}}>
+                  <div className="stat-card stat-card--red">
+                    <div className="stat-label">重複公司數</div>
+                    <div className="stat-num" style={{color:'var(--red)'}}><Counter end={d.total}/></div>
+                    <div className="stat-note">佔匯入公司 {d.dupPct}%</div>
+                  </div>
+                  <div className="stat-card stat-card--green">
+                    <div className="stat-label">非重複公司數</div>
+                    <div className="stat-num"><Counter end={d.nonDup}/></div>
+                    <div className="stat-note">佔匯入公司 {(100-d.dupPct).toFixed(1)}%</div>
+                  </div>
+                </div>
+              </Reveal>
+              <Reveal delay={200}>
+                <div className="card" style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+                  <div className="pie-section">
+                    <svg width="200" height="200" viewBox="0 0 200 200">
+                      <circle cx="100" cy="100" r={r} fill="none" stroke="var(--border)" strokeWidth="24"/>
+                      <circle cx="100" cy="100" r={r} fill="none" stroke="var(--orange)" strokeWidth="24"
+                        strokeDasharray={`${dupLen} ${c-dupLen}`} strokeDashoffset={c/4} strokeLinecap="round"/>
+                      <text x="100" y="95" textAnchor="middle" fontSize="26" fontWeight="900" fill="var(--text-primary)">
+                        {d.dupPct}%
+                      </text>
+                      <text x="100" y="118" textAnchor="middle" fontSize="12" fill="var(--text-muted)">重複比例</text>
+                    </svg>
+                    <div className="pie-legend">
+                      <div className="pie-legend-item">
+                        <div className="pie-dot" style={{background:'var(--orange)'}}/><span><strong>{fmt(d.total)}</strong> 重複</span>
+                      </div>
+                      <div className="pie-legend-item">
+                        <div className="pie-dot" style={{background:'var(--border)'}}/><span><strong>{fmt(d.nonDup)}</strong> 非重複</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    /* 分佈 — 圓餅圖在上，長條圖在下 */
+    function DistributionSection() {
+      const d = DATA.dup;
+      const domMax = DATA.domesticTop[0].count;
+      const oveMax = DATA.overseasTop[0].count;
+      const r2=70, c2=2*Math.PI*r2;
+      const domLen = (d.domestic/(d.domestic+d.overseas))*c2;
+      const oveLen = (d.overseas/(d.domestic+d.overseas))*c2;
+      return (
+        <section id="sec-4" style={{background:'var(--bg)'}}>
+          <div className="page-wrap">
+            <Reveal><div className="section-head">
+              <div className="section-num">04 — DISTRIBUTION</div>
+              <div className="section-title">各單位重複公司分佈</div>
+            </div></Reveal>
+
+            {/* 國內 vs 國外 圓餅圖 */}
+            <Reveal delay={100}>
+              <div className="card" style={{marginBottom:'32px'}}>
+                <h3 style={{fontSize:'1.05rem',fontWeight:700,color:'var(--text-primary)',marginBottom:'28px',textAlign:'center'}}>
+                  國內 vs 國外重複公司分佈
+                </h3>
+                <div style={{display:'flex',justifyContent:'center',alignItems:'center',gap:'60px',flexWrap:'wrap'}}>
+                  <svg width="180" height="180" viewBox="0 0 180 180">
+                    <circle cx="90" cy="90" r={r2} fill="none" stroke="var(--orange)" strokeWidth="22"/>
+                    <circle cx="90" cy="90" r={r2} fill="none" stroke="var(--navy)" strokeWidth="22"
+                      strokeDasharray={`${oveLen} ${c2-oveLen}`} strokeDashoffset={c2/4} strokeLinecap="round"/>
+                  </svg>
+                  <div className="pie-legend">
+                    <div className="pie-legend-item">
+                      <div className="pie-dot" style={{background:'var(--orange)'}}/><span><strong>國內：{fmt(d.domestic)}</strong>（{(d.domestic/DATA.dup.total*100).toFixed(1)}%）</span>
+                    </div>
+                    <div className="pie-legend-item">
+                      <div className="pie-dot" style={{background:'var(--navy)'}}/><span><strong>國外：{fmt(d.overseas)}</strong>（{(d.overseas/DATA.dup.total*100).toFixed(1)}%）</span>
+                    </div>
+                    <div style={{fontSize:'0.85rem',color:'var(--text-muted)',marginTop:'8px'}}>
+                      23 萬筆重複公司中，國外佔絕大多數
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* 長條圖 — 全寬橫向 */}
+            <Reveal delay={200}>
+              <div className="card" style={{marginBottom:'24px'}}>
+                <h3 style={{fontSize:'1.05rem',fontWeight:700,color:'var(--text-primary)',marginBottom:'20px',display:'flex',alignItems:'center',gap:'10px'}}>
+                  <span className="solution-tag solution-tag--domestic">國內</span> Top 10
+                </h3>
+                <div className="bar-chart">
+                  {DATA.domesticTop.map((d,i) => (
+                    <div className="bar-row" style={{gridTemplateColumns:'280px 1fr 80px'}} key={i}>
+                      <div className="bar-label" style={{whiteSpace:'normal'}} title={d.name}>{d.name}</div>
+                      <AnimBar width={Math.max((d.count/domMax)*100,2)} color="orange"/>
+                      <div className="bar-value">{fmt(d.count)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+            <Reveal delay={300}>
+              <div className="card">
+                <h3 style={{fontSize:'1.05rem',fontWeight:700,color:'var(--text-primary)',marginBottom:'20px',display:'flex',alignItems:'center',gap:'10px'}}>
+                  <span className="solution-tag solution-tag--overseas">國外</span> Top 10
+                </h3>
+                <div className="bar-chart">
+                  {DATA.overseasTop.map((d,i) => (
+                    <div className="bar-row" style={{gridTemplateColumns:'280px 1fr 80px'}} key={i}>
+                      <div className="bar-label" style={{whiteSpace:'normal'}} title={d.name}>{d.name}</div>
+                      <AnimBar width={Math.max((d.count/oveMax)*100,2)} color="blue"/>
+                      <div className="bar-value">{fmt(d.count)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      );
+    }
+
+    function DQStepsSection() {
+      return (
+        <section id="sec-5" className="highlight-section">
+          <div className="page-wrap">
+            <Reveal><div className="section-head">
+              <div className="section-num">05 — METHODOLOGY</div>
+              <div className="section-title">TAITRA 數據治理 DQ 六大步驟</div>
+            </div></Reveal>
+            <div className="steps-grid">
+              {DATA.dqSteps.map((s,i) => (
+                <Reveal key={i} delay={i*80}>
+                  <div className="step-card" style={{background:'rgba(255,255,255,0.07)',borderColor:'rgba(255,255,255,0.1)'}}>
+                    <div className="step-num-circle">{s.num}</div>
+                    <h4 style={{color:'#fff'}}>{s.title}</h4>
+                    <div className="step-zh" style={{color:'var(--golden)'}}>{s.zh}</div>
+                    <p style={{color:'rgba(255,255,255,0.6)'}}>{s.desc}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function ProfileSection() {
+      const pr = DATA.profiling;
+      return (
+        <section id="sec-6" style={{background:'var(--white)'}}>
+          <div className="page-wrap">
+            <Reveal><div className="section-head">
+              <div className="section-num">06 — DATA PROFILING</div>
+              <div className="section-title">DQ 資料剖析</div>
+              <div className="section-subtitle">國內重複公司資料剖析結果</div>
+            </div></Reveal>
+
+            {/* 資料集概覽 */}
+            <Reveal delay={100}>
+              <div className="stats-grid" style={{marginBottom:'32px'}}>
+                <div className="stat-card stat-card--blue">
+                  <div className="stat-label">資料總筆數</div>
+                  <div className="stat-num"><Counter end={pr.summary.total}/></div>
+                </div>
+                <div className="stat-card stat-card--golden">
+                  <div className="stat-label">唯一記錄數</div>
+                  <div className="stat-num"><Counter end={pr.summary.unique}/></div>
+                  <div className="stat-note">依 CompanyName</div>
+                </div>
+                <div className="stat-card stat-card--red">
+                  <div className="stat-label">涉及重複筆數</div>
+                  <div className="stat-num" style={{color:'var(--red)'}}><Counter end={pr.summary.dupRecords}/></div>
+                  <div className="stat-note">99.97% of total</div>
+                </div>
+                <div className="stat-card stat-card--orange">
+                  <div className="stat-label">重複組數</div>
+                  <div className="stat-num"><Counter end={pr.summary.dupGroups}/></div>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* 完整性缺失 */}
+            <Reveal delay={200}>
+              <div className="callout callout--orange" style={{marginBottom:'32px'}}>
+                <div className="callout-title" style={{color:'var(--orange)'}}>數據總體完整性缺失</div>
+                <div className="callout-body">
+                  完整性缺失率 = 缺失儲存格數 ／（總筆數 × 關鍵欄位數）× 100%<br/>
+                  關鍵欄位總儲存格：<strong>{fmt(pr.completeness.totalCells)}</strong>（{fmt(pr.summary.total)} 筆 × 7 欄位）｜
+                  缺失儲存格：<strong style={{color:'var(--red)'}}>{fmt(pr.completeness.missingCells)}</strong>｜
+                  完整性缺失率：<strong style={{color:'var(--red)'}}>{pr.completeness.missingRate}%</strong> <span className="badge badge--critical">嚴重</span>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* 欄位缺失表 */}
+            <Reveal delay={300}>
+              <div className="card" style={{marginBottom:'40px',overflow:'auto'}}>
+                <h3 style={{fontSize:'1.05rem',fontWeight:700,color:'var(--text-primary)',marginBottom:'20px'}}>各欄位缺失詳情</h3>
+                <table className="data-table">
+                  <thead><tr><th>欄位名稱</th><th>有值筆數</th><th>缺失筆數</th><th>缺失率</th><th>缺失比例</th><th>等級</th></tr></thead>
+                  <tbody>
+                    {pr.fields.map((f,i) => (
+                      <tr key={i}>
+                        <td style={{fontWeight:600,fontFamily:"'Inter',monospace"}}>{f.name}</td>
+                        <td style={{fontVariantNumeric:'tabular-nums'}}>{fmt(f.hasVal)}</td>
+                        <td style={{fontVariantNumeric:'tabular-nums',color:f.level==='critical'?'var(--red)':f.level==='warn'?'var(--yellow)':'var(--text-body)'}}>{fmt(f.missing)}</td>
+                        <td>{f.rate.toFixed(2)}%</td>
+                        <td>
+                          <div className="pct-bar-wrap">
+                            <div className="pct-bar-track">
+                              <div className={`pct-bar-fill pct-bar-fill--${f.level}`} style={{width:`${Math.min(f.rate,100)}%`}}/>
+                            </div>
+                          </div>
+                        </td>
+                        <td><span className={`badge badge--${f.level}`}>{levelLabel(f.level)}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Reveal>
+
+            {/* 已完成剖析報告連結 */}
+            <Reveal delay={400}>
+              <h3 style={{fontSize:'1.15rem',fontWeight:700,color:'var(--text-primary)',marginBottom:'20px'}}>已完成剖析報告</h3>
+              <div className="two-col">
+                {DATA.reports.map((g,gi) => (
+                  <div key={gi}>
+                    <div style={{fontSize:'0.85rem',fontWeight:700,color:'var(--text-muted)',marginBottom:'12px',textTransform:'uppercase',letterSpacing:'0.06em'}}>
+                      {g.scope}
+                    </div>
+                    <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                      {g.items.map((item,fi) => (
+                        <a key={fi} className="report-link" href={`./data/${item.file}`} target="_blank" rel="noopener noreferrer">
+                          <span className="link-icon" style={{background:gi===0?'var(--orange-light)':'var(--light-blue)',color:gi===0?'var(--orange)':'var(--navy)'}}>📄</span>
+                          {item.name}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      );
+    }
+
+    function SolutionSection() {
+      return (
+        <section id="sec-7" style={{background:'var(--bg)'}}>
+          <div className="page-wrap">
+            <Reveal><div className="section-head">
+              <div className="section-num">07 — SOLUTIONS</div>
+              <div className="section-title">解決方案建議</div>
+              <div className="section-subtitle">因國內外公司資料特性不同，採取差異化策略</div>
+            </div></Reveal>
+            <div className="solution-grid">
+              <Reveal delay={100}>
+                <div className="solution-card solution-card--domestic">
+                  <div className="solution-tag solution-tag--domestic">國內方案</div>
+                  <h3>已有統編定義（TW VAT UK）</h3>
+                  <div className="flow">
+                    <span className="flow-step" style={{background:'var(--orange-light)',color:'var(--orange)'}}>清整</span>
+                    <span className="flow-arrow">→</span>
+                    <span className="flow-step">觀察</span>
+                    <span className="flow-arrow">→</span>
+                    <span className="flow-step">止血</span>
+                  </div>
+                  <ul>
+                    <li>
+                      <span className="li-icon li-icon--orange">✓</span>
+                      <div><strong>HB CLI 審核</strong>：用終端機讓宛伶逐筆審核合併</div>
+                    </li>
+                  </ul>
+                  <div style={{marginTop:'20px',borderRadius:'var(--radius-md)',overflow:'hidden',border:'1px solid var(--border)',cursor:'pointer'}}
+                    onClick={() => {
+                      const overlay = document.createElement('div');
+                      Object.assign(overlay.style, {position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.85)',zIndex:10000,display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out'});
+                      const img = document.createElement('img');
+                      img.src = '../data/CLI2.png';
+                      Object.assign(img.style, {maxWidth:'90vw',maxHeight:'90vh',borderRadius:'12px',boxShadow:'0 20px 60px rgba(0,0,0,0.5)'});
+                      overlay.appendChild(img);
+                      overlay.onclick = () => document.body.removeChild(overlay);
+                      document.body.appendChild(overlay);
+                    }}>
+                    <img src="../data/CLI2.png" alt="CLI 畫面" style={{width:'100%',display:'block'}}/>
+                    <div style={{position:'absolute',bottom:'8px',right:'8px',background:'rgba(0,0,0,0.5)',color:'#fff',borderRadius:'var(--radius-pill)',padding:'4px 12px',fontSize:'0.75rem'}}>🔍 點擊放大</div>
+                  </div>
+                  <div style={{marginTop:'16px'}}>
+                    <a href="https://www.loom.com/share/ce855eb48bbe4c09aba3676134a69ea2" target="_blank" rel="noopener noreferrer"
+                      style={{display:'inline-flex',alignItems:'center',gap:'8px',padding:'10px 20px',background:'var(--orange-light)',color:'var(--orange)',borderRadius:'var(--radius-pill)',fontWeight:700,fontSize:'0.9rem',textDecoration:'none',border:'1px solid var(--orange-soft)',transition:'all 0.2s'}}>
+                      🎬 DEMO 影片
+                    </a>
+                  </div>
+                </div>
+              </Reveal>
+              <Reveal delay={200}>
+                <div className="solution-card solution-card--overseas">
+                  <div className="solution-tag solution-tag--overseas">國外方案</div>
+                  <h3>需再定義新的 UK</h3>
+                  <div className="flow">
+                    <span className="flow-step" style={{background:'var(--light-blue)',color:'var(--navy)'}}>止血</span>
+                    <span className="flow-arrow">→</span>
+                    <span className="flow-step">觀察</span>
+                    <span className="flow-arrow">→</span>
+                    <span className="flow-step">清整</span>
+                  </div>
+                  <ul>
+                    
+                    <li>
+                      <span className="li-icon li-icon--blue">1</span>
+                      <div>優化國外公司匯入範本</div>
+                    </li>
+                    <li>
+                      <span className="li-icon li-icon--blue">2</span>
+                      <div><strong>挑選前三名單位試行</strong><br/>TTC Chicago、Los Angeles、San Francisco</div>
+                    </li>
+                    <li>
+                      <span className="li-icon li-icon--blue">3</span>
+                      <div>觀察重複公司是否下降</div>
+                    </li>
+                  </ul>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function ClosingSection() {
+      return (
+        <section id="sec-8" className="closing">
+          <div className="page-wrap">
+            <Reveal><h2>數據治理，<span className="hl">從清整開始</span></h2></Reveal>
+            <Reveal delay={150}><p>透過系統性的 DQ 六大步驟，解決 HubSpot 23 萬筆重複公司問題，為 TAITRA 數據品質奠定堅實基礎。</p></Reveal>
+          </div>
+        </section>
+      );
+    }
+
+    function App() {
+      return (
+        <>
+          <Sidebar/>
+          <div className="main">
+            <HeroSection/>
+            <BackgroundSection/>
+            <OverviewSection/>
+            <DuplicateSection/>
+            <DistributionSection/>
+            <DQStepsSection/>
+            <ProfileSection/>
+            <SolutionSection/>
+            <ClosingSection/>
+            <footer className="footer"><div className="page-wrap">TAITRA 數據分析組 — 數據治理專案 © 2026</div></footer>
+          </div>
+          <BackToTop/>
+        </>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
