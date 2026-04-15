@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>TAITRA 數據品質剖析報告 - TTC, San Francisco</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Microsoft JhengHei','Segoe UI',sans-serif; background:#f0f2f5; color:#333; padding:30px; line-height:1.6; }
+  .container { max-width:1200px; margin:0 auto; }
+
+  /* Header */
+  .header { background:linear-gradient(135deg,#0d3b66,#1a5276,#2980b9); color:#fff; padding:36px 44px; border-radius:16px 16px 0 0; position:relative; }
+  .header h1 { font-size:28px; margin-bottom:4px; letter-spacing:0.5px; }
+  .header .subtitle { font-size:15px; opacity:0.9; margin-bottom:12px; }
+  .header .meta { font-size:13px; opacity:0.75; line-height:1.7; }
+  .header .badge-total { position:absolute; right:44px; top:36px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:14px; padding:14px 24px; text-align:center; }
+  .header .badge-total .num { font-size:36px; font-weight:800; }
+  .header .badge-total .txt { font-size:12px; opacity:0.85; }
+
+  .content { background:#fff; padding:44px; border-radius:0 0 16px 16px; box-shadow:0 4px 24px rgba(0,0,0,0.07); }
+
+  /* Steps nav */
+  .step-nav { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:30px; background:#f8f9fa; border-radius:10px; padding:8px; }
+  .step-nav a { text-decoration:none; color:#555; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; transition:all .2s; }
+  .step-nav a:hover, .step-nav a.active { background:#2980b9; color:#fff; }
+
+  /* Section */
+  .section { margin-bottom:44px; scroll-margin-top:20px; }
+  .section h2 { font-size:20px; color:#0d3b66; border-left:5px solid #2980b9; padding-left:14px; margin-bottom:8px; }
+  .section .step-desc { font-size:13px; color:#888; margin-bottom:18px; padding-left:19px; }
+
+  /* Cards */
+  .summary-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:20px; }
+  .card { background:#f8f9fa; border-radius:12px; padding:18px; text-align:center; border:1px solid #e9ecef; transition:box-shadow .2s; }
+  .card:hover { box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+  .card .label { font-size:11px; color:#888; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.5px; }
+  .card .value { font-size:28px; font-weight:700; color:#0d3b66; }
+  .card .sub { font-size:11px; color:#aaa; margin-top:3px; }
+  .card.warn .value { color:#e74c3c; }
+  .card.ok .value { color:#27ae60; }
+  .card.info .value { color:#2980b9; }
+
+  /* Table */
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:12px; }
+  th { background:#f1f3f5; color:#495057; font-weight:600; padding:10px 12px; text-align:left; border-bottom:2px solid #dee2e6; white-space:nowrap; }
+  td { padding:9px 12px; border-bottom:1px solid #f0f0f0; }
+  tr:hover { background:#fafbfc; }
+  .num { text-align:right; font-variant-numeric:tabular-nums; }
+
+  /* Bar */
+  .bar-bg { background:#eee; border-radius:4px; height:12px; width:100px; display:inline-block; vertical-align:middle; }
+  .bar { border-radius:4px; height:12px; min-width:2px; }
+
+  /* Badge */
+  .badge { display:inline-block; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:600; }
+  .badge-green { background:#d4edda; color:#155724; }
+  .badge-yellow { background:#fff3cd; color:#856404; }
+  .badge-red { background:#f8d7da; color:#721c24; }
+  .badge-blue { background:#d1ecf1; color:#0c5460; }
+
+  /* Chart layout */
+  .chart-row { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:20px; }
+  .chart-col { flex:1; min-width:280px; }
+  .chart-box { background:#fafbfc; border:1px solid #eee; border-radius:12px; padding:20px; text-align:center; }
+  .chart-box h4 { font-size:13px; color:#666; margin-bottom:12px; }
+
+  /* Gauge */
+  .gauge-wrapper { display:flex; gap:20px; flex-wrap:wrap; }
+  .gauge-box { background:#fafbfc; border:1px solid #eee; border-radius:12px; padding:20px; text-align:center; flex:1; min-width:220px; }
+  .gauge-box h4 { font-size:13px; color:#666; margin-bottom:10px; }
+
+  /* Info boxes */
+  .note { background:#fff8e1; border:1px solid #ffe082; border-radius:8px; padding:10px 14px; font-size:12px; color:#795548; margin-top:10px; }
+  .info-box { background:#e8f4f8; border:1px solid #b3d9e8; border-radius:10px; padding:16px 20px; font-size:13px; margin-bottom:16px; }
+  .info-box h4 { color:#0d3b66; margin-bottom:8px; font-size:14px; }
+  .warn-box { background:#fff5f5; border:1px solid #f5c6cb; border-radius:10px; padding:16px 20px; font-size:13px; margin-bottom:16px; }
+  .warn-box h4 { color:#721c24; margin-bottom:8px; font-size:14px; }
+  .success-box { background:#f0fff4; border:1px solid #c3e6cb; border-radius:10px; padding:16px 20px; font-size:13px; margin-bottom:16px; }
+
+  /* Conclusion */
+  .conclusion { background:linear-gradient(135deg,#e8f4f8,#f0f7ff); border-radius:12px; padding:22px 28px; margin-top:25px; }
+  .conclusion h3 { color:#0d3b66; margin-bottom:10px; font-size:17px; }
+  .conclusion ul { padding-left:20px; line-height:2; font-size:14px; }
+
+  /* Priority table */
+  .priority-H { background:#f8d7da; }
+  .priority-M { background:#fff3cd; }
+  .priority-L { background:#d4edda; }
+
+  .footer { text-align:center; color:#bbb; font-size:11px; margin-top:25px; }
+  details { margin-top:10px; }
+  summary { cursor:pointer; color:#2980b9; font-weight:600; padding:6px 0; }
+
+  .def-term { font-weight:600; color:#0d3b66; }
+  .def-formula { font-family:'Consolas','Courier New',monospace; background:#f1f3f5; padding:2px 8px; border-radius:4px; font-size:12px; }
+
+  @media print { body { padding:10px; } .step-nav { display:none; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ===== HEADER ===== -->
+  <div class="header">
+    <h1>TAITRA 數據品質剖析報告</h1>
+    <div class="subtitle">Step 2 資料剖析 — TTC, San Francisco 資料集</div>
+    <div class="meta">
+      資料集：國外 (TTC, San Francisco) — 數位科技中心<br>
+      來源檔案：TTC, San Francisco_dp_20260408.csv<br>
+      報告產出日期：2026-04-08
+    </div>
+    <div class="badge-total">
+      <div class="num">8,685</div>
+      <div class="txt">資料總筆數 (rows)</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Step Navigation -->
+    <div class="step-nav">
+      <a href="#overview">資料集概覽</a>
+      <a href="#completeness">一、完整性缺失</a>
+      <a href="#keyval">二、鍵值缺失率</a>
+      <a href="#conflict">三、邏輯衝突比</a>
+    </div>
+
+    <!-- ==================== 資料集概覽 ==================== -->
+    <div class="section" id="overview">
+      <h2>Step 2 — 資料剖析</h2>
+      <div class="step-desc">目的：依關鍵 KEY 值剖析三大指標 — 完整性缺失、鍵值缺失率、邏輯衝突比</div>
+
+      <div class="info-box">
+        <h4>關鍵 KEY 值定義</h4>
+        <p>本次剖析使用以下 7 個關鍵欄位：公司名稱、domain_name、tt_vat_number、tt_taiwan_vat_number、tt_global_vat_number、hs_object_id、website</p>
+      </div>
+
+      <h3 style="font-size:15px;color:#555;margin:18px 0 10px;">資料集概覽</h3>
+      <div class="summary-cards">
+        <div class="card info"><div class="label">資料總筆數</div><div class="value">8,685</div></div>
+        <div class="card"><div class="label">唯一公司數</div><div class="value">2,302</div></div>
+        <div class="card warn"><div class="label">涉及重複筆數</div><div class="value">8,531</div><div class="sub">98.23%</div></div>
+        <div class="card"><div class="label">重複公司組數</div><div class="value">2,152</div></div>
+      </div>
+    </div>
+
+    <!-- ==================== 一、完整性缺失 ==================== -->
+    <div class="section" id="completeness">
+      <h3 style="font-size:15px;color:#555;margin:18px 0 10px;">一、數據總體完整性缺失</h3>
+      <div class="info-box" style="padding:10px 14px;">
+        <span class="def-term">定義：</span>7 個關鍵欄位中，所有儲存格為空(NULL)的比例。<br>
+        <span class="def-term">公式：</span><span class="def-formula">完整性缺失率 = 缺失儲存格數 / (總筆數 x 關鍵欄位數) x 100%</span>
+      </div>
+      <div class="summary-cards">
+        <div class="card"><div class="label">關鍵欄位總儲存格</div><div class="value">60,795</div><div class="sub">8,685 筆 x 7 欄位</div></div>
+        <div class="card warn"><div class="label">缺失儲存格</div><div class="value">43,426</div></div>
+        <div class="card warn"><div class="label">完整性缺失率</div><div class="value">71.43%</div></div>
+      </div>
+
+      <table>
+        <tr><th>欄位名稱</th><th>有值筆數</th><th>缺失筆數</th><th>缺失率</th><th>缺失比例</th><th>等級</th></tr>
+        <tr>
+          <td>公司名稱</td><td class="num">8,681</td><td class="num">4</td><td class="num">0.05%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:0.0%;background:#27ae60"></div></div></td>
+          <td><span class="badge badge-green">良好</span></td>
+        </tr>
+        <tr>
+          <td>domain_name (公司網域)</td><td class="num">2</td><td class="num">8,683</td><td class="num">99.98%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:100.0%;background:#e74c3c"></div></div></td>
+          <td><span class="badge badge-red">嚴重</span></td>
+        </tr>
+        <tr>
+          <td>tt_vat_number (稅務編號)</td><td class="num">0</td><td class="num">8,685</td><td class="num">100.00%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:100.0%;background:#e74c3c"></div></div></td>
+          <td><span class="badge badge-red">嚴重</span></td>
+        </tr>
+        <tr>
+          <td>tt_taiwan_vat_number (台灣統編)</td><td class="num">0</td><td class="num">8,685</td><td class="num">100.00%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:100.0%;background:#e74c3c"></div></div></td>
+          <td><span class="badge badge-red">嚴重</span></td>
+        </tr>
+        <tr>
+          <td>tt_global_vat_number (國外統編)</td><td class="num">0</td><td class="num">8,685</td><td class="num">100.00%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:100.0%;background:#e74c3c"></div></div></td>
+          <td><span class="badge badge-red">嚴重</span></td>
+        </tr>
+        <tr>
+          <td>hs_object_id (唯一識別碼)</td><td class="num">8,685</td><td class="num">0</td><td class="num">0.00%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:0.0%;background:#27ae60"></div></div></td>
+          <td><span class="badge badge-green">良好</span></td>
+        </tr>
+        <tr>
+          <td>website (公司網站)</td><td class="num">1</td><td class="num">8,684</td><td class="num">99.99%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:100.0%;background:#e74c3c"></div></div></td>
+          <td><span class="badge badge-red">嚴重</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- ==================== 二、鍵值缺失率 ==================== -->
+    <div class="section" id="keyval">
+      <h3 style="font-size:15px;color:#555;margin:24px 0 10px;">二、關鍵鍵值缺失率</h3>
+      <div class="info-box" style="padding:10px 14px;">
+        <span class="def-term">定義：</span>用於識別公司身份的關鍵欄位（排除系統自動產生的 hs_object_id），各欄位缺失筆數佔總筆數之比率。<br>
+        <span class="def-term">公式：</span><span class="def-formula">鍵值缺失率 = 該欄位缺失筆數 / 總筆數 x 100%</span>
+      </div>
+
+      <table>
+        <tr><th>關鍵鍵值欄位</th><th>缺失筆數</th><th>缺失率</th><th>比例</th><th>等級</th></tr>
+        <tr>
+          <td>公司名稱</td><td class="num">4</td><td class="num">0.05%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:0.0%;background:#27ae60"></div></div></td>
+          <td><span class="badge badge-green">良好</span></td>
+        </tr>
+        <tr>
+          <td>domain_name (公司網域)</td><td class="num">8,683</td><td class="num">99.98%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:100.0%;background:#e74c3c"></div></div></td>
+          <td><span class="badge badge-red">嚴重</span></td>
+        </tr>
+        <tr>
+          <td>tt_vat_number (稅務編號)</td><td class="num">8,685</td><td class="num">100.00%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:100.0%;background:#e74c3c"></div></div></td>
+          <td><span class="badge badge-red">嚴重</span></td>
+        </tr>
+        <tr>
+          <td>tt_taiwan_vat_number (台灣統編)</td><td class="num">8,685</td><td class="num">100.00%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:100.0%;background:#e74c3c"></div></div></td>
+          <td><span class="badge badge-red">嚴重</span></td>
+        </tr>
+        <tr>
+          <td>tt_global_vat_number (國外統編)</td><td class="num">8,685</td><td class="num">100.00%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:100.0%;background:#e74c3c"></div></div></td>
+          <td><span class="badge badge-red">嚴重</span></td>
+        </tr>
+        <tr>
+          <td>website (公司網站)</td><td class="num">8,684</td><td class="num">99.99%</td>
+          <td><div class="bar-bg"><div class="bar" style="width:100.0%;background:#e74c3c"></div></div></td>
+          <td><span class="badge badge-red">嚴重</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- ==================== 三、邏輯衝突比 ==================== -->
+    <div class="section" id="conflict">
+      <h3 style="font-size:15px;color:#555;margin:24px 0 10px;">三、定義邏輯衝突比</h3>
+      <div class="info-box" style="padding:10px 14px;">
+        <span class="def-term">定義：</span>資料中存在邏輯矛盾或重複的比率。<br>
+        <span class="def-term">公式：</span>
+        <span class="def-formula">重複衝突比 = 涉及重複的筆數 / 總筆數 x 100%</span>
+        <span class="def-formula">欄位矛盾比 = 欄位間矛盾筆數 / 總筆數 x 100%</span>
+      </div>
+
+      <div class="gauge-wrapper">
+        <div class="gauge-box">
+          <h4>A. 重複記錄衝突</h4>
+          <canvas id="dupGauge" width="260" height="160"></canvas>
+          <div style="margin-top:8px;">
+            <span style="font-size:28px;font-weight:700;color:#e74c3c">98.23%</span>
+            <div style="font-size:12px;color:#999;margin-top:2px;">8,531 筆 / 8,685 筆</div>
+          </div>
+        </div>
+        <div class="gauge-box">
+          <h4>B. 欄位間邏輯矛盾</h4>
+          <canvas id="conflictDonut" width="200" height="200"></canvas>
+          <div style="margin-top:8px;">
+            <span style="font-size:28px;font-weight:700;color:#27ae60">0.00%</span>
+            <div style="font-size:12px;color:#999;margin-top:2px;">0 筆 / 8,685 筆</div>
+          </div>
+        </div>
+        <div class="gauge-box">
+          <h4>C. 重複組內 VAT 不一致</h4>
+          <div style="font-size:42px;font-weight:700;color:#27ae60;margin:30px 0;">0</div>
+          <div style="font-size:12px;color:#999;">組（共 2,152 組重複）</div>
+        </div>
+      </div>
+
+      <details><summary>前 20 筆重複公司名稱（依重複次數排序）</summary>
+      <table><tr><th>公司名稱</th><th>出現次數</th></tr>
+      <tr><td>AMD</td><td class="num">239</td></tr>
+      <tr><td>TREK BICYCLE CORPORATION</td><td class="num">107</td></tr>
+      <tr><td>HP INC.</td><td class="num">99</td></tr>
+      <tr><td>NVIDIA CORPORATION</td><td class="num">89</td></tr>
+      <tr><td>CYCLING SPORTS GROUP</td><td class="num">78</td></tr>
+      <tr><td>SRAM</td><td class="num">70</td></tr>
+      <tr><td>SUPERMICRO</td><td class="num">67</td></tr>
+      <tr><td>SPECIALIZED</td><td class="num">65</td></tr>
+      <tr><td>CORSAIR</td><td class="num">60</td></tr>
+      <tr><td>SPECIALIZED BIKE</td><td class="num">53</td></tr>
+      <tr><td>INTEL CORPORATION</td><td class="num">53</td></tr>
+      <tr><td>Super Micro Computer, Inc.</td><td class="num">50</td></tr>
+      <tr><td>Intel</td><td class="num">45</td></tr>
+      <tr><td>Cooler Master</td><td class="num">44</td></tr>
+      <tr><td>Asus</td><td class="num">40</td></tr>
+      <tr><td>HPE</td><td class="num">35</td></tr>
+      <tr><td>Google</td><td class="num">35</td></tr>
+      <tr><td>XL SCREW CORPORATION</td><td class="num">33</td></tr>
+      <tr><td>HEWLETT PACKARD ENTERPRISE</td><td class="num">33</td></tr>
+      <tr><td>Advanced Micro Devices, Inc.</td><td class="num">33</td></tr>
+      </table></details>
+    </div>
+
+    <!-- ===== 總結摘要 ===== -->
+    <div class="conclusion">
+      <h3>總結摘要</h3>
+      <ul>
+        <li>資料總筆數 <strong>8,685</strong> 筆，唯一公司 <strong>2,302</strong> 個，<strong>2,152</strong> 組重複（涉及 <strong>8,531</strong> 筆，佔 98.23%）。</li>
+        <li>7 關鍵欄位完整性缺失率 <strong>71.43%</strong>（43,426 / 60,795 儲存格），其中 tt_vat_number、tt_taiwan_vat_number、tt_global_vat_number <strong>100% 缺失</strong>。</li>
+        <li>domain 缺失率 <strong>99.98%</strong>（僅 2 筆有值），website 缺失率 <strong>99.99%</strong>（僅 1 筆有值）。</li>
+        <li>重複衝突比高達 <strong>98.23%</strong>，最嚴重的公司 AMD 出現 <strong>239</strong> 次。</li>
+        <li>欄位間邏輯矛盾比 <strong>0.00%</strong>，重複組內 VAT 不一致 <strong>0</strong> 組。</li>
+      </ul>
+    </div>
+
+  </div>
+  <div class="footer">TAITRA 數據品質剖析報告 — Step 2 資料剖析 V3 — 自動產出 2026-04-08</div>
+</div>
+
+<!-- ===== Charts ===== -->
+<script>
+// Duplicate Gauge (half-doughnut)
+new Chart(document.getElementById('dupGauge'), {
+  type:'doughnut',
+  data:{ labels:['重複衝突','正常'], datasets:[{ data:[98.23,1.77], backgroundColor:['#e74c3c','#e9ecef'], borderWidth:0 }] },
+  options:{ circumference:180, rotation:-90, cutout:'72%', plugins:{ legend:{display:false} } }
+});
+
+// Conflict Donut
+new Chart(document.getElementById('conflictDonut'), {
+  type:'doughnut',
+  data:{ labels:['欄位矛盾','正常'], datasets:[{ data:[0,8685], backgroundColor:['#27ae60','#e9ecef'], borderWidth:0 }] },
+  options:{ cutout:'68%', plugins:{ legend:{display:false} } }
+});
+</script>
+</body>
+</html>
