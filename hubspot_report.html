@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>HubSpot Portal 健檢報告 | TAITRA</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f6fa;
+    color: #222;
+    line-height: 1.65;
+  }
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 56px 64px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  header {
+    border-bottom: 4px solid #1a3e72;
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+  }
+  header h1 {
+    font-size: 30px;
+    color: #1a3e72;
+    margin: 0 0 6px 0;
+  }
+  header .sub {
+    color: #666;
+    font-size: 14px;
+  }
+  header .meta {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #888;
+  }
+  h2 {
+    color: #1a3e72;
+    font-size: 20px;
+    border-left: 5px solid #1a3e72;
+    padding-left: 12px;
+    margin: 40px 0 16px;
+  }
+  h3 {
+    font-size: 16px;
+    color: #2c4f87;
+    margin: 20px 0 8px;
+  }
+  p { margin: 8px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid #dde3ec;
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #1a3e72;
+    color: #fff;
+    font-weight: 600;
+  }
+  tbody tr:nth-child(even) { background: #f7f9fc; }
+  .num { font-weight: 700; color: #1a3e72; }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 18px 0 8px;
+  }
+  .kpi {
+    background: #f7f9fc;
+    border-left: 4px solid #1a3e72;
+    padding: 14px 16px;
+    border-radius: 4px;
+  }
+  .kpi .label { font-size: 12px; color: #666; }
+  .kpi .value { font-size: 24px; font-weight: 700; color: #1a3e72; margin: 4px 0; }
+  .kpi .sub { font-size: 12px; color: #888; }
+
+  .issue {
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 10px 0;
+    border-left: 6px solid;
+  }
+  .issue.red { background: #fff2f2; border-color: #d9363e; }
+  .issue.orange { background: #fff7eb; border-color: #e8850b; }
+  .issue h3 { margin: 0 0 4px 0; font-size: 15px; }
+  .issue .desc { font-size: 14px; color: #444; }
+
+  .scenario {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 10px 0 18px;
+  }
+  .scenario .case {
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-size: 13.5px;
+  }
+  .scenario .bad { background: #fff0f0; border: 1px solid #f3c3c3; }
+  .scenario .good { background: #eff9f1; border: 1px solid #bfe3c8; }
+  .scenario .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    margin-bottom: 6px;
+  }
+  .scenario .bad .tag { background: #d9363e; color: #fff; }
+  .scenario .good .tag { background: #2f8a41; color: #fff; }
+  .scenario-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a3e72;
+    margin-bottom: 4px;
+  }
+
+  .concl-card {
+    background: linear-gradient(90deg, #1a3e72 0%, #2b5ca8 100%);
+    color: #fff;
+    padding: 18px 22px;
+    border-radius: 6px;
+    margin: 12px 0 20px;
+  }
+  .concl-card h3 { color: #ffd864; margin: 0 0 6px 0; }
+  .concl-card ul { margin: 6px 0 0; padding-left: 20px; }
+
+  .phase-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .phase {
+    background: #f7f9fc;
+    border-top: 4px solid #1a3e72;
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .phase .when { color: #888; font-size: 12px; }
+  .phase .who { font-weight: 700; color: #1a3e72; margin: 4px 0; font-size: 15px; }
+
+  .action-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0;
+  }
+  .action-list li {
+    padding: 10px 14px;
+    border-left: 3px solid #1a3e72;
+    background: #f7f9fc;
+    margin: 8px 0;
+    font-size: 14px;
+  }
+  .action-list b { color: #1a3e72; }
+
+  code {
+    background: #eef2f7;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+    color: #1a3e72;
+  }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid #e0e6ef;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+  }
+
+  @media print {
+    body { background: #fff; }
+    .page { box-shadow: none; padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <h1>HubSpot Portal 健檢報告</h1>
+  <div class="sub">Portal 22388917 ｜ TAITRA 台灣對外貿易發展協會</div>
+  <div class="meta">報告人：Chueh Solina（數位科技中心・數據分析組）｜日期：2026-04-24</div>
+</header>
+
+<!-- 1. Executive Summary -->
+<h2>一、結論摘要</h2>
+<div class="concl-card">
+  <h3>三句話總結</h3>
+  <ul>
+    <li>Portal 目前被當作「<b>超大型聯絡人資料庫</b>」在用，Sales / Service 功能尚未建立紀律。</li>
+    <li>最關鍵風險：<b>公司資料 98.5% 沒有 owner、96.6% 沒有 domain / 統編</b>，後續自動化全無法運作。</li>
+    <li>建議現階段採用 <b>「種子同仁為 owner、人工治理、不自動換 owner」</b>的保守路線。</li>
+  </ul>
+</div>
+
+<!-- 2. Portal 使用現況 -->
+<h2>二、Portal 使用現況</h2>
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="label">Contacts</div>
+    <div class="value">335,284</div>
+    <div class="sub">近 30 天 +10,041</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Companies</div>
+    <div class="value">219,822</div>
+    <div class="sub">近 30 天 +4,292</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Deals</div>
+    <div class="value">372</div>
+    <div class="sub">近 30 天 +226（近期才啟用）</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Tickets</div>
+    <div class="value">335</div>
+    <div class="sub">近 30 天僅 +1（幾近停用）</div>
+  </div>
+</div>
+<p style="font-size:13px;color:#666;">
+  註：Contacts/Companies 每日持續進來，說明各單位「匯入資料」的動作很活躍；但 Deal/Ticket 使用度極低，代表後續業務流程未落地。
+</p>
+
+<!-- 3. 三大問題 -->
+<h2>三、目前發現的三大問題</h2>
+
+<div class="issue red">
+  <h3>🔴 問題 1｜公司資料嚴重缺欄位（最緊急）</h3>
+  <div class="desc">
+    219,822 家公司裡：<span class="num">216,588 家（98.5%）沒有 owner</span>、<span class="num">212,340 家（96.6%）沒有 domain</span>。
+    最近 30 天新匯入的 4,292 家公司中，<b>仍有 99.9% 沒 owner、98.8% 沒 domain</b>──表示問題還在持續發生。
+  </div>
+</div>
+
+<div class="issue red">
+  <h3>🔴 問題 2｜Ticket 流程形同停擺</h3>
+  <div class="desc">
+    335 張工單中，<span class="num">314 張（94%）仍在開啟</span>，其中 <span class="num">160 張（51%）超過 90 天沒動過</span>。
+    「Finish」階段 <b>0 張</b>──代表沒有人在結案。近 30 天僅新增 1 張，使用者很可能已改用別的工具。
+  </div>
+</div>
+
+<div class="issue orange">
+  <h3>🟠 問題 3｜Deal 預計關閉日大量逾期</h3>
+  <div class="desc">
+    開啟中的 178 張 Deals 中，<span class="num">99 張（56%）closedate 已早於今日</span>──需要業務重排 pipeline 或關單。
+  </div>
+</div>
+
+<!-- 4. 為什麼 Owner 重要 -->
+<h2>四、為什麼「Owner」這麼重要？</h2>
+<p>Owner 就像這筆資料的「<b>值日生</b>」。沒有值日生，HubSpot 就不知道「這件事該找誰」，很多自動化就變成<b>按鈕按了沒反應</b>。以下是實際情境：</p>
+
+<h3>情境 1｜新客戶填了表單，誰去跟進？</h3>
+<div class="scenario">
+  <div class="case bad">
+    <span class="tag">無 owner</span>
+    <div class="scenario-title">Lead 躺在資料庫裡沒人收到通知</div>
+    三週後才被發現，客戶早已找中國供應商。
+  </div>
+  <div class="case good">
+    <span class="tag">有 owner</span>
+    <div class="scenario-title">自動指派給歐洲組種子同仁</div>
+    手機跳通知、首頁顯示新 Lead，下午就回信。
+  </div>
+</div>
+
+<h3>情境 2｜主管想看「我們組這季帶進多少客戶」</h3>
+<div class="scenario">
+  <div class="case bad">
+    <span class="tag">無 owner</span>
+    <div class="scenario-title">報表顯示「未指派：216,588 筆」</div>
+    無法分組比較各單位績效，KPI 考核做不出來。
+  </div>
+  <div class="case good">
+    <span class="tag">有 owner</span>
+    <div class="scenario-title">Dashboard 一鍵顯示各組成果</div>
+    「會員開發組這季新增 342 家公司、27 筆 Deal」。
+  </div>
+</div>
+
+<h3>情境 3｜業務離職要交接</h3>
+<div class="scenario">
+  <div class="case bad">
+    <span class="tag">無 owner</span>
+    <div class="scenario-title">不知道哪些是他經手的</div>
+    翻 Email、翻備註，一家家查，一週都做不完。
+  </div>
+  <div class="case good">
+    <span class="tag">有 owner</span>
+    <div class="scenario-title">一鍵 Transfer Ownership</div>
+    30 秒全部轉給接替人員。
+  </div>
+</div>
+
+<h3>情境 4｜兩週沒聯絡客戶，系統自動提醒</h3>
+<div class="scenario">
+  <div class="case bad">
+    <span class="tag">無 owner</span>
+    <div class="scenario-title">Workflow 無法知道要通知誰</div>
+    案子在 pipeline 裡爛掉（目前 99 張逾期 Deal 的成因之一）。
+  </div>
+  <div class="case good">
+    <span class="tag">有 owner</span>
+    <div class="scenario-title">系統自動寄信給 Deal owner</div>
+    「您的 XX 案已 14 天未動」。
+  </div>
+</div>
+
+<h3>情境 5｜海外客戶寄信來變成 Ticket</h3>
+<div class="scenario">
+  <div class="case bad">
+    <span class="tag">無 owner</span>
+    <div class="scenario-title">Ticket 進來就靜止</div>
+    沒人看、沒人回（即目前 94% 開啟中工單的現狀）。
+  </div>
+  <div class="case good">
+    <span class="tag">有 owner</span>
+    <div class="scenario-title">自動分派到對應區域組</div>
+    24 小時內沒回就升級通知主管。
+  </div>
+</div>
+
+<!-- 5. Domain / 統編 -->
+<h2>五、為什麼要填 Domain / 統編？</h2>
+<p>Domain 對公司 = Email 對聯絡人，是 HubSpot 辨識「同一家公司」的唯一鍵。沒有它會造成：</p>
+<table>
+  <thead>
+    <tr><th>影響層面</th><th>實際後果</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>自動去重失效</td><td>「台積電 / TSMC / Taiwan Semiconductor」會被建成 3 筆不同公司，越匯越多重複</td></tr>
+    <tr><td>聯絡人無法自動關聯公司</td><td>Email 是 <code>john@abc.com</code> 的聯絡人，不會自動連到 domain=abc.com 的公司</td></tr>
+    <tr><td>後續匯入持續產生重複</td><td>再次匯入同份資料會「新建」而不是「更新」</td></tr>
+    <tr><td>報表失真</td><td>「一家公司有幾位聯絡人 / 幾筆 Deal」全都不準</td></tr>
+  </tbody>
+</table>
+<p style="background:#f7f9fc;padding:10px 14px;border-left:3px solid #2f8a41;font-size:13.5px;">
+  <b>好消息：</b>Portal 已存在 <code>tt_taiwan_vat_number</code>（台灣統編）與 <code>tt_global_vat_number</code>（國外 VAT）屬性，建議直接設為<b>公司去重鍵</b>，比 domain 更適合 TAITRA 的使用情境。
+</p>
+
+<!-- 6. Owner 指派建議 -->
+<h2>六、現階段 Company Owner 指派建議</h2>
+<div class="concl-card">
+  <h3>核心規則</h3>
+  <p style="margin:4px 0;"><b>Owner ＝ 第一個建立這家公司的單位種子同仁，鎖住不換。</b></p>
+  <p style="margin:4px 0;">其他有往來的單位，用 HubSpot 內建的 <code style="background:rgba(255,255,255,0.2);color:#ffd864;">hs_shared_team_ids</code> 加入共享；業務活動做在各自的 Deal／Ticket 上。</p>
+</div>
+
+<h3>為什麼是「種子同仁」而不是一般同仁／組長／主任？</h3>
+<table>
+  <thead>
+    <tr><th>對象</th><th>現階段適不適合？</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>一般同仁</td><td>❌ 對工具陌生，通知收到也不會看，會讓系統顯得沒用</td></tr>
+    <tr><td>組長／主任</td><td>❌ 還沒受訓，階級越高反彈越大</td></tr>
+    <tr><td><b>單位種子同仁（共 67 位）</b></td><td>✅ 最熟悉工具、有意願、可 1:1 教育，規模剛好</td></tr>
+    <tr><td>資訊單位</td><td>❌ 會變成全公司客服窗口，而且破壞業務單位的資料歸屬感</td></tr>
+  </tbody>
+</table>
+
+<h3>多單位共用同一家公司怎麼辦？</h3>
+<p>以台達電子為例：</p>
+<table>
+  <thead>
+    <tr><th>時間</th><th>事件</th><th>系統行為</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Day 1</td><td>電資通訊組匯入台達</td><td>建立公司，owner = 電資通訊組種子；shared_teams = [電資]</td></tr>
+    <tr><td>Day 30</td><td>TTC Paris 邀參展</td><td>統編查到已存在，不重複建；加入 shared_teams；建立自己的 Deal</td></tr>
+    <tr><td>Day 60</td><td>智慧機械組做調查</td><td>同上，加入 shared_teams；活動記錄掛 Note</td></tr>
+  </tbody>
+</table>
+<p style="font-size:13.5px;color:#444;">
+  <b>結果：</b>公司只有 1 筆、owner 穩定不變、三個單位都能在自己的 Deal／Note／Ticket 上做事，誰跟誰有關係一目了然。
+</p>
+
+<h3>三階段推進</h3>
+<div class="phase-bar">
+  <div class="phase">
+    <div class="when">Phase 1｜現在～6 個月</div>
+    <div class="who">種子同仁（67 位）</div>
+    同仁先「讀」為主，推動小組教種子使用。
+  </div>
+  <div class="phase">
+    <div class="when">Phase 2｜6～12 個月</div>
+    <div class="who">下沉到組長</div>
+    熟練單位改由組長當 owner，種子轉為 coach。
+  </div>
+  <div class="phase">
+    <div class="when">Phase 3｜12 個月以後</div>
+    <div class="who">下放至同仁</div>
+    正式啟用 Workflow / SLA / 個人績效。
+  </div>
+</div>
+
+<!-- 7. 能否自動化 -->
+<h2>七、可以用 Workflow 自動改 owner 嗎？</h2>
+<table>
+  <thead>
+    <tr><th>方式</th><th>可行性</th><th>需要條件</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>簡單規則（如 Deal 成交→Company owner 改為 Deal owner）</td>
+      <td>✅ 可以</td>
+      <td>內建 Workflow 即可</td>
+    </tr>
+    <tr>
+      <td>「跨單位比較互動量 → 換成最活躍的單位」</td>
+      <td>⚠️ 不能只靠 Workflow</td>
+      <td>需要 <b>Operations Hub Professional</b> 的 Custom Code Action，或外部 API 程式</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="concl-card" style="background:linear-gradient(90deg,#8b3a0e 0%,#c05621 100%);">
+  <h3>我的建議：現階段不做自動換 owner</h3>
+  <ul>
+    <li>同仁黏著度還不高，<b>穩定 &gt;&gt; 聰明</b>──owner 莫名被系統換掉會引發不信任。</li>
+    <li>「互動最多」本身有爭議：20 封 Email 和 1 筆 200 萬 Deal 誰算多？</li>
+    <li>改 owner 會連鎖觸發通知／任務重派，一次改幾百家會把種子淹沒。</li>
+    <li>改採<b>「每月報表 + 每季人工審查」半自動</b>：由數據治理 Steward 撈清單，推動小組人工執行轉移。</li>
+  </ul>
+</div>
+
+<!-- 8. 建議下一步 -->
+<h2>八、建議下一步 Action Items</h2>
+<ul class="action-list">
+  <li><b>【止血】</b>推動小組制定「公司匯入 SOP」──必填統編、owner、shared_teams，不合規者退回。</li>
+  <li><b>【清理】</b>啟用 HubSpot Duplicates Manager，以統編作為合併依據，處理既有 21 萬筆疑似重複公司。</li>
+  <li><b>【治理】</b>數據治理組每月產出「無 owner 公司清單」與「跨單位共用公司清單」，每季人工審查是否轉移 owner。</li>
+  <li><b>【教育】</b>推動小組針對 67 位種子同仁開訓練，重點：匯入 SOP、查統編、shared_teams 操作。</li>
+  <li><b>【後續】</b>Ticket 流程先暫時保留，評估是否改用其他工具或重新設計 pipeline。</li>
+</ul>
+
+<footer>
+  本報告由 HubSpot Portal 22388917 即時資料分析產生｜TAITRA 數位科技中心・數據分析組
+</footer>
+
+</div>
+</body>
+</html>
